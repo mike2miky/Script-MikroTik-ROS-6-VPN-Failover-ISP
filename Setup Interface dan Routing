@@ -1,0 +1,11 @@
+# Asumsi:
+# ether1 - ISP 1 (utama untuk VPN)
+# ether2 - ISP 2 (backup)
+# VPN interface - pptp-out1 atau ovpn-client1
+
+# Tambahkan default route untuk kedua ISP
+/ip route add gateway=192.168.1.1 distance=1 check-gateway=ping comment="ISP1-Primary"
+/ip route add gateway=192.168.2.1 distance=2 check-gateway=ping comment="ISP2-Backup"
+
+# Routing khusus untuk VPN melalui ISP1
+/ip route add dst-address=VPN_SERVER_IP gateway=192.168.1.1 distance=1 comment="VPN-route-ISP1"
