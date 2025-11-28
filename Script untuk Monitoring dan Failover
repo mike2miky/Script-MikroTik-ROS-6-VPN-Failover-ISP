@@ -1,0 +1,79 @@
+# Script untuk mengecek koneksi VPN dan ISP
+/system script
+add name="check-vpn-connection" source={
+    :local vpnServer "VPN_SERVER_IP"
+    :local isp1Gateway "192.168.1.1"
+    :local isp2Gateway "192.168.2.1"
+    :local vpnInterface "pptp-out1"
+    
+    # Cek apakah VPN server reachable melalui ISP1
+    /ping count=3 address=$vpnServer interface=ether1
+    :if ($"received" = 0) do={
+        :log info "VPN server tidak reachable via ISP1, cek koneksi ISP1"
+        
+        # Cek koneksi internet ISP1
+        /ping count=3 address="8.8.8.8" interface=ether1
+        :if ($"received" = 0) do={
+            :log warning "ISP1 DOWN, switching ke ISP2"
+            
+            # Non-aktifkan route utama
+            /ip route set [find comment="ISP1-Primary"] disabled=yes
+            /ip route set [find comment="VPN-route-ISP1"] disabled=yes
+            
+            # Aktifkan route backup
+            /ip route set [find comment="ISP2-Backup"] disabled=no
+            
+            # Reconnect VPN melalui ISP2
+            /interface disable $vpnInterface
+            :delay 3s
+            /interface enable $vpnInterface
+            
+            :log info "Failover ke ISP2 completed"
+        } else={
+            :log info "ISP1 UP tapi VPN server down, mungkin masalah VPN"
+        }
+    } else={
+        # Cek jika saat ini menggunakan ISP2 tapi ISP1 sudah up
+        /ip route set [find comment="ISP1-Primary"]
+        :if ($"disabled" = true) do={
+            :log info "ISP1 sudah UP kembali, switching back"
+            
+            # Kembali ke ISP1
+            /ip route set [find comment="ISP1-Primary"] disabled=no
+            /ip route set [find comment="VPN-route-ISP1"] disabled=no
+            /ip route set [find comment="ISP2-Backup"] disabled=yes
+            
+            # Reconnect VPN melalui ISP1
+            /interface disable $vpnInterface
+            :delay 3s
+            /interface enable $vpnInterface
+            
+            :log info "Switchback ke ISP1 completed"
+        }
+    }
+}
+
+# Script untuk monitoring sederhana
+add name="monitor-isp" source={
+    :local target "8.8.8.8"
+    :local isp1Interface "ether1"
+    :local isp2Interface "ether2"
+    
+    # Cek ISP1
+    /ping count=2 address=$target interface=$isp1Interface
+    :local isp1Up ($"received" > 0)
+    
+    # Cek ISP2  
+    /ping count=2 address=$target interface=$isp2Interface
+    :local isp2Up ($"received" > 0)
+    
+    :if (!$isp1Up && $isp2Up) do={
+        :log warning "ISP1 DOWN, ISP2 UP - initiating failover"
+        /system script run "check-vpn-connection"
+    } else={
+        :if ($isp1Up) do={
+            /ip route set [find comment="ISP1-Primary"] disabled=no
+            /ip route set [find comment="ISP2-Backup"] disabled=yes
+        }
+    }
+}
