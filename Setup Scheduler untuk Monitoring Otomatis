@@ -1,0 +1,3 @@
+/system scheduler
+add name="monitor-isp-scheduler" interval=30s on-event="/system script run monitor-isp"
+add name="check-vpn-scheduler" interval=1m on-event="/system script run check-vpn-connection"
