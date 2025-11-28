@@ -1,0 +1,7 @@
+# Netwatch untuk monitoring gateway
+/tool netwatch
+add host=192.168.1.1 timeout=3s interval=10s up-script="/ip route set [find comment=\"ISP1-Primary\"] disabled=no" \
+    down-script="/ip route set [find comment=\"ISP1-Primary\"] disabled=yes" comment="Monitor ISP1 Gateway"
+    
+add host=192.168.2.1 timeout=3s interval=10s up-script="/ip route set [find comment=\"ISP2-Backup\"] disabled=no" \
+    down-script="/ip route set [find comment=\"ISP2-Backup\"] disabled=yes" comment="Monitor ISP2 Gateway"
