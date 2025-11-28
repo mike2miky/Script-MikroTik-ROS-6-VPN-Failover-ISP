@@ -1,0 +1,20 @@
+/system script
+add name="switch-to-isp1" source={
+    /ip route set [find comment="ISP1-Primary"] disabled=no
+    /ip route set [find comment="ISP2-Backup"] disabled=yes
+    /ip route set [find comment="VPN-route-ISP1"] disabled=no
+    /interface disable pptp-out1
+    :delay 2s
+    /interface enable pptp-out1
+    :log info "Manual switch to ISP1 completed"
+}
+
+add name="switch-to-isp2" source={
+    /ip route set [find comment="ISP1-Primary"] disabled=yes  
+    /ip route set [find comment="ISP2-Backup"] disabled=no
+    /ip route set [find comment="VPN-route-ISP1"] disabled=yes
+    /interface disable pptp-out1
+    :delay 2s
+    /interface enable pptp-out1
+    :log info "Manual switch to ISP2 completed"
+}
