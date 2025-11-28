@@ -1,0 +1,12 @@
+/ip firewall mangle
+# Mark connection untuk traffic VPN
+add chain=prerouting action=mark-connection new-connection-mark=VPN_conn \
+    src-address=VPN_CLIENT_IP passthrough=yes comment="Mark VPN connections"
+
+# Mark routing untuk VPN connections
+add chain=prerouting action=mark-routing new-routing-mark=VPN_route \
+    connection-mark=VPN_conn passthrough=no comment="Route marking for VPN"
+
+/ip route
+add gateway=192.168.1.1 routing-mark=VPN_route distance=1 comment="VPN-route-via-ISP1"
+add gateway=192.168.2.1 routing-mark=VPN_route distance=2 comment="VPN-route-via-ISP2"
