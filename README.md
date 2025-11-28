@@ -1,7 +1,7 @@
-Cara Penggunaan:
-Ganti variabel sesuai dengan setup Anda:
+**Cara Penggunaan:**
+**Ganti variabel** sesuai dengan setup Anda:
 
-VPN_SERVER_IP - IP server VPN
+1. VPN_SERVER_IP - IP server VPN
 
 192.168.1.1 - Gateway ISP1
 
@@ -9,7 +9,7 @@ VPN_SERVER_IP - IP server VPN
 
 pptp-out1 - Nama interface VPN
 
-Pastikan:
+**Pastikan:**
 
 Kedua ISP terkoneksi dengan baik
 
